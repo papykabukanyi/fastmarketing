@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Milligram CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+
+    <!-- Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            padding: 20px;
+            background-color: #444;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .left-side, .right-side {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        input[type="text"], input[type="email"], input[type="file"], #template_name {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #666;
+            box-sizing: border-box;
+            color: #fff;
+            background-color: #555;
+            font-size: 1.2rem;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        #recipients {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            height: 150px;
+            margin-bottom: 10px;
+            padding-right: 10px;
+        }
+
+        #editor {
+            height: 300px;
+            margin-bottom: 20px;
+            border: 1px solid #666;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #555;
+            transition: border-color 0.3s;
+            flex-grow: 1;
+        }
+
+        .ql-toolbar {
+            background-color: #555;
+            border-color: #666;
+        }
+
+        .ql-container {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .ql-stroke {
+            stroke: #fff;
+        }
+
+        .ql-fill {
+            fill: #fff;
+        }
+
+        .ql-picker-label {
+            color: #fff;
+        }
+
+        .ql-picker-item {
+            color: #fff;
+        }
+
+        .ql-toolbar button,
+        .ql-toolbar .ql-picker,
+        .ql-toolbar .ql-picker-options {
+            color: #fff !important;
+        }
+
+        .button-primary, .template-list button {
+            background-color: #555;
+            border: none;
+            color: white;
+            padding: 4px 6px; /* Smaller buttons */
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 10px; /* Smaller font size */
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            border-radius: 5px;
+            margin-top: 5px; /* Reduced margin between buttons */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .template-item button {
+            margin-right: 4px; /* Space between buttons */
+        }
+
+        .button-primary:hover, .template-list button:hover {
+            background-color: #777;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .template-list {
+            margin-top: 10px;
+            max-height: 120px; /* Reduced height */
+            overflow-y: auto; /* Enable vertical scrolling */
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .template-list .template-item {
+            display: flex;
+            justify-content: flex-start; /* Align buttons to the start */
+            margin-bottom: 3px; /* Reduced margin to fit more templates */
+            align-items: center;
+        }
+
+        .template-list h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 600;
+            transition: color 0.3s;
+            position: sticky; /* Make the title sticky */
+            top: 0;
+            background-color: #444;
+            z-index: 10;
+        }
+
+        /* Slim custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #444;
+        }
+
+        .add-recipient-button {
+            background-color: #28a745;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+        }
+
+        .add-recipient-button:hover {
+            background-color: #218838;
+        }
+
+        .optional-fields {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+
+        .optional-fields input {
+            flex: 1;
+            min-width: 110px;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+
+        .disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .attachment-section {
+            margin-top: 20px;
+        }
+
+        .attachment-section .attachment-fields {
+            margin-bottom: 10px;
+        }
+
+        .navbar {
+            background-color: #444;
+            color: white;
+            padding: 20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0;
+            margin-bottom: 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .navbar h2 {
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .navbar .settings {
+            position: relative;
+            cursor: pointer;
+            font-size: 2.5rem;
+        }
+
+        .settings .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #555;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .settings:hover .dropdown {
+            display: block;
+        }
+
+        .dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .dark-mode .container {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .dark-mode h1,
+        .dark-mode .template-list h4 {
+            color: #fff;
+        }
+
+        .dark-mode input[type="text"],
+        .dark-mode input[type="email"],
+        .dark-mode input[type="file"],
+        .dark-mode #template_name {
+            background-color: #555;
+            color: #fff;
+            border: 1px solid #666;
+        }
+
+        .dark-mode #editor {
+            border-color: #666;
+        }
+
+        .dark-mode .button-primary,
+        .dark-mode .template-list button {
+            background-color: #555;
+        }
+
+        .dark-mode .template-list button.delete {
+            background-color: #ff5c5c;
+        }
+
+        .dark-mode label {
+            color: #ccc;
+        }
+
+        .dark-mode .navbar {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .dark-mode .settings .dropdown {
+            background-color: #555;
+            color: #fff;
+            border-color: #666;
+        }
+
+        .dark-mode .add-recipient-button {
+            background-color: #28a745;
+        }
+
+        .dark-mode .add-recipient-button:hover {
+            background-color: #218838;
+        }
+
+        .popup, .loading-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #444;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 1001;
+        }
+
+        .loading-popup {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .popup button:hover {
+            background-color: #218838;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Navbar -->
+    <div class="navbar">
+        <h2>FastMarketing!</h2>
+        <div class="settings">
+            <span>&#9881;</span>
+            <div class="dropdown">
+                <p>Change Excel Column</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Send a Marketing Email</h1>
+        <div class="flex-container">
+            <div class="left-side">
+                <form id="emailForm" method="POST" enctype="multipart/form-data">
+                    <label for="subject">Email Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+
+                    <label for="file">Upload Excel or CSV File (optional)</label>
+                    <input type="file" id="file" name="file" onchange="handleFileUpload(event)">
+
+                    <div id="recipients">
+                        <div class="optional-fields">
+                            <input type="text" name="first_name" placeholder="First Name" required>
+                            <input type="text" name="last_name" placeholder="Last Name" required>
+                            <input type="email" name="recipient_email" placeholder="Email" required>
+                        </div>
+                    </div>
+                    <p>If you upload a file, the manual inputs for first name, last name, and email will be optional.</p>
+                    <button type="button" class="button-primary add-recipient-button" onclick="addRecipient()">Add Another Recipient</button>
+
+                    <div class="attachment-section">
+                        <label>Attachments</label>
+                        <div id="attachmentFields" class="attachment-fields"></div>
+                        <button type="button" class="button-primary" onclick="addAttachmentField()">Add Attachment</button>
+
+                    </div>
+                    <button type="submit" class="button-primary">Send Emails</button>
+                </form>
+            </div>
+            <div class="right-side">
+                <label for="template_content">Email Content</label>
+                <div id="editor"></div>
+
+                <input type="text" id="template_name" placeholder="Template Name"> <!-- Larger input field -->
+                <button type="button" class="button-primary" onclick="saveTemplate()">Save Template</button>
+
+                <div class="template-list" id="templateList">
+                    <h4>Saved Templates</h4>
+                    <!-- Templates will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="popupContainer" style="display:none;">
+        <div class="popup-overlay"></div>
+        <div class="popup">
+            <p id="popupMessage"></p>
+            <button id="popupButton" onclick="resetForm()">Send More!</button>
+        </div>
+    </div>
+
+    <div id="loadingPopup" style="display:none;">
+        <div class="popup-overlay"></div>
+        <div class="loading-popup">
+            <div class="loading-spinner"></div>
+            <p>Sending Emails...</p>
+            <div id="emailStatusListLoading"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const content = quill.root.innerHTML;
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'template_content';
+            hiddenInput.value = content;
+            this.appendChild(hiddenInput);
+
+            showLoadingPopup();
+            sendEmails(new FormData(this));
+        });
+
+        function sendEmails(formData) {
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                hideLoadingPopup();
+                showSuccessPopup();
+            })
+            .catch(error => {
+                hideLoadingPopup();
+                showPopup('An error occurred while sending emails.');
+            });
+        }
+
+        function showPopup(message) {
+            document.getElementById('popupMessage').textContent = message;
+            document.getElementById('popupContainer').style.display = 'block';
+            hideLoadingPopup();
+        }
+
+        function showSuccessPopup() {
+            document.getElementById('popupMessage').textContent = 'Marketing emails sent!';
+            document.getElementById('popupButton').textContent = 'Send More!';
+            document.getElementById('popupContainer').style.display = 'block';
+        }
+
+        function hideLoadingPopup() {
+            document.getElementById('loadingPopup').style.display = 'none';
+        }
+
+        function showLoadingPopup() {
+            document.getElementById('loadingPopup').style.display = 'block';
+            document.getElementById('emailStatusListLoading').innerHTML = '';
+        }
+
+        function resetForm() {
+            document.getElementById('emailForm').reset();
+            quill.root.innerHTML = '';
+            document.getElementById('recipients').innerHTML = `
+                <div class="optional-fields">
+                    <input type="text" name="first_name" placeholder="First Name" required>
+                    <input type="text" name="last_name" placeholder="Last Name" required>
+                    <input type="email" name="recipient_email" placeholder="Email" required>
+                </div>`;
+            document.getElementById('attachmentFields').innerHTML = '';
+            document.getElementById('popupContainer').style.display = 'none';
+        }
+
+        function addRecipient() {
+            const container = document.getElementById('recipients');
+            const recipientDiv = document.createElement('div');
+            recipientDiv.classList.add('optional-fields');
+            recipientDiv.innerHTML = `
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input type="email" name="recipient_email" placeholder="Email" required>`;
+            container.appendChild(recipientDiv);
+        }
+
+        function addAttachmentField() {
+            const container = document.getElementById('attachmentFields');
+            const attachmentDiv = document.createElement('div');
+            attachmentDiv.innerHTML = `
+                <input type="file" name="attachments">`;
+            container.appendChild(attachmentDiv);
+        }
+
+        function saveTemplate() {
+            const templateName = document.getElementById('template_name').value;
+            const templateContent = quill.root.innerHTML;
+            const subject = document.getElementById('subject').value;
+
+            if (!templateName) {
+                alert('Please enter a template name');
+                return;
+            }
+
+            fetch('/save_template', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `template_name=${encodeURIComponent(templateName)}&template_content=${encodeURIComponent(templateContent)}&subject=${encodeURIComponent(subject)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Template saved successfully');
+                    loadTemplates();
+                } else {
+                    alert('Failed to save template');
+                }
+            });
+        }
+
+        function loadTemplates() {
+            const templateList = document.getElementById('templateList');
+            templateList.innerHTML = '<h4>Saved Templates</h4>';
+
+            fetch('/load_templates')
+            .then(response => response.json())
+            .then(templates => {
+                for (const [name, data] of Object.entries(templates)) {
+                    const templateDiv = document.createElement('div');
+                    templateDiv.classList.add('template-item');
+
+                    const loadButton = document.createElement('button');
+                    loadButton.textContent = name;
+                    loadButton.classList.add('button-primary');
+                    loadButton.style.fontSize = '10px'; /* Smaller font size for buttons */
+                    loadButton.onclick = () => {
+                        quill.root.innerHTML = data.content;
+                        document.getElementById('subject').value = data.subject;
+                        document.getElementById('template_name').value = name;
+                    };
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.classList.add('button-primary', 'delete');
+                    deleteButton.style.fontSize = '10px'; /* Smaller font size for buttons */
+                    deleteButton.onclick = () => {
+                        deleteTemplate(name);
+                    };
+
+                    templateDiv.appendChild(loadButton);
+                    templateDiv.appendChild(deleteButton);
+                    templateList.appendChild(templateDiv);
+                }
+            });
+        }
+
+        function deleteTemplate(templateName) {
+            if (confirm(`Are you sure you want to delete the template "${templateName}"?`)) {
+                fetch(`/delete_template/${encodeURIComponent(templateName)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete template');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Template deleted successfully');
+                        loadTemplates();
+                    } else {
+                        alert('Failed to delete template');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the template.');
+                });
+            }
+        }
+
+        function handleFileUpload(event) {
+            const fileInput = event.target;
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/upload_file', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        const container = document.getElementById('recipients');
+                        container.innerHTML = ''; // Clear existing inputs
+
+                        data.forEach(recipient => {
+                            const recipientDiv = document.createElement('div');
+                            recipientDiv.classList.add('optional-fields');
+                            recipientDiv.innerHTML = `
+                                <input type="text" name="first_name" placeholder="First Name" value="${recipient.first_name}" required>
+                                <input type="text" name="last_name" placeholder="Last Name" value="${recipient.last_name}" required>
+                                <input type="email" name="recipient_email" placeholder="Email" value="${recipient.email}" required>`;
+                            container.appendChild(recipientDiv);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Load templates on page load
+        window.onload = loadTemplates;
+    </script>
+</body>
+</html>
