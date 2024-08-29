@@ -1,7 +1,8 @@
+import os
+import multiprocessing
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 import pandas as pd
 import json
-import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -12,6 +13,7 @@ from gevent import monkey, sleep
 from gevent.pool import Pool
 from dotenv import load_dotenv
 
+# Patch all to make gevent compatible with Flask
 monkey.patch_all()
 
 # Load environment variables from .env file
@@ -202,4 +204,5 @@ def load_templates():
     return {}
 
 if __name__ == '__main__':
+    multiprocessing.set_start_method('spawn')  # This ensures compatibility on Windows.
     app.run(debug=True)
