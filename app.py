@@ -237,7 +237,6 @@
 # if __name__ == '__main__':
 #     asyncio.run(run_app())
 
-
 import os
 import logging
 import pandas as pd
@@ -273,12 +272,16 @@ SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 # Define the templates file globally
 TEMPLATES_FILE = 'templates.json'
 
+# Ensure SMTP_USERNAME is set
+if not SMTP_USERNAME:
+    raise ValueError("SMTP_USERNAME is not set. Please check your .env file and make sure the 'SMTP_USERNAME' variable is set.")
+
 async def send_email(subject, recipient_email, first_name, last_name, template_content, attachments=[], retries=3):
     try:
         logging.info(f"Preparing to send email to {recipient_email}")
 
         msg = MIMEMultipart()
-        msg['From'] = SMTP_USERNAME
+        msg['From'] = SMTP_USERNAME  # Fixed: Ensure From header is set
         msg['To'] = recipient_email
         msg['Subject'] = subject
 
@@ -482,7 +485,7 @@ def load_templates():
     return {}
 
 async def run_app():
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True)
 
 if __name__ == '__main__':
     asyncio.run(run_app())
